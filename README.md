@@ -37,3 +37,8 @@ Both datasets use a unique 10-digit PIN (Parcel Identification Number), which is
 split into a 6-digit MAJOR code (the neighborhood/block) and a 4-digit MINOR
 code (the specific lot). You will use MAJOR + MINOR as your primary keys to join
 the geographic shapes to the text-based ownership data in your local database.
+
+## Prompts
+
+- Write a Go CLI named "parcel-reader". It should do nothing more than print
+  "hello" and then exit cleanly.
