@@ -5,8 +5,9 @@
 *.so
 *.dylib
 
-# Input data
+# Data
 data/*.csv
+parcels.db
 
 # Test binary, built with `go test -c`
 *.test
