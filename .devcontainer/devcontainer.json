@@ -13,7 +13,10 @@
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
-        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } },
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true
       }
     }
   },
@@ -25,6 +28,7 @@
     "ANTHROPIC_AUTH_TOKEN": "${localEnv:ANTHROPIC_AUTH_TOKEN}"
   },
   "mounts": [
-    "source=claude-code-config,target=/home/vscode/.claude,type=volume"
+    // "source=claude-code-config,target=/home/vscode/.claude,type=volume"
+    "source=devc-${localWorkspaceFolderBasename}-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
   ]
 }
