@@ -2,6 +2,8 @@ FROM mcr.microsoft.com/devcontainers/go
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install git
 
+RUN go install golang.org/x/tools/gopls@latest
+
 ARG USERNAME=vscode
 
 RUN SNIPPET="export PROMPT_COMMAND='history -a' && export HISTFILE=/commandhistory/.bash_history" \
@@ -15,6 +17,9 @@ RUN SNIPPET="autoload -Uz add-zsh-hook; append_history() { fc -W }; add-zsh-hook
     && touch /commandhistory/.zsh_history \
     && chown -R $USERNAME /commandhistory \
     && echo "$SNIPPET" >> "/home/$USERNAME/.zshrc"
+
+RUN mkdir -p /home/$USERNAME/.claude && chown -R $USERNAME /home/$USERNAME/.claude
+RUN chown -R $USERNAME /go
 
 # Set environment variables
 ENV DEVCONTAINER=true

@@ -10,5 +10,6 @@
     "deny": [
       "Read(.devcontainer/**)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": ["gopls"]
 }
