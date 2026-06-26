@@ -28,7 +28,6 @@
     "ANTHROPIC_AUTH_TOKEN": "${localEnv:ANTHROPIC_AUTH_TOKEN}"
   },
   "mounts": [
-    // "source=claude-code-config,target=/home/vscode/.claude,type=volume"
     "source=devc-${localWorkspaceFolderBasename}-config-${devcontainerId},target=/home/vscode/.claude,type=volume"
   ]
 }
