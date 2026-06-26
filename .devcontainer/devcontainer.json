@@ -10,7 +10,11 @@
       "extensions": [
         "streetsidesoftware.code-spell-checker",
         "esbenp.prettier-vscode"
-      ]
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": { "zsh": { "path": "/bin/zsh" } }
+      }
     }
   },
   "containerEnv": {
