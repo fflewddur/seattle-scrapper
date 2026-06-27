@@ -5,11 +5,14 @@
       "Bash(go mod *)",
       "Bash(touch main.go)",
       "Bash(mkdir -p parcel-reader && cd parcel-reader && go mod init parcel-reader)",
-      "Bash(go run *)"
+      "Bash(go run *)",
+      "mcp__gopls__go_diagnostics"
     ],
     "deny": [
       "Read(.devcontainer/**)"
     ]
   },
-  "enabledMcpjsonServers": ["gopls"]
+  "enabledMcpjsonServers": [
+    "gopls"
+  ]
 }

@@ -12,6 +12,27 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+type RowReader interface {
+	Read() ([]string, error)
+}
+
+type filteredReader struct {
+	source  *csv.Reader
+	indices []int
+}
+
+func (f *filteredReader) Read() ([]string, error) {
+	record, err := f.source.Read()
+	if err != nil {
+		return nil, err
+	}
+	filtered := make([]string, len(f.indices))
+	for i, idx := range f.indices {
+		filtered[i] = record[idx]
+	}
+	return filtered, nil
+}
+
 func main() {
 	loadParcels()
 	loadParcelGeo()
@@ -32,13 +53,45 @@ func loadParcels() {
 	}
 	defer db.Close()
 
-	// 3. Create Table
-	if err := createTable(db, "parcels", header); err != nil {
+	// 3. Filter columns
+	targetCols := []string{
+		"Major",
+		"Minor",
+		"PropName",
+		"PropType",
+		"PlatName",
+		"PlatLot",
+		"PlatBlock",
+	}
+	indices := make([]int, 0, len(targetCols))
+	newHeader := make([]string, 0, len(targetCols))
+	for _, target := range targetCols {
+		found := false
+		for i, h := range header {
+			if h == target {
+				indices = append(indices, i)
+				newHeader = append(newHeader, h)
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Fatalf("required column %s not found in CSV", target)
+		}
+	}
+
+	fReader := &filteredReader{
+		source:  reader,
+		indices: indices,
+	}
+
+	// 4. Create Table
+	if err := createTable(db, "parcels", newHeader); err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
 
-	// 4. Insert Rows
-	count, err := insertParcels(db, "parcels", header, reader)
+	// 5. Insert Rows
+	count, err := insertParcels(db, "parcels", newHeader, fReader)
 	if err != nil {
 		log.Fatalf("failed to insert parcels: %v", err)
 	}
@@ -61,13 +114,57 @@ func loadParcelGeo() {
 	}
 	defer db.Close()
 
-	// 3. Create Table
-	if err := createTable(db, "parcel_geo", header); err != nil {
+	// 3. Filter columns
+	targetCols := []string{
+		"Major",
+		"Minor",
+		"Site Address (per KCA)",
+		"Property Name (per KCA)",
+		"Property Type (per KCA)",
+		"Land Use Code (per KCA)",
+		"Detailed Existing Land Use (per KCA)",
+		"Site Zip Code (per KCA)",
+		"Building Description (per KCA)",
+		"Ownership Type",
+		"Public Ownership Category",
+		"Parcel Area Exclude Stacked Parcel (Y)",
+		"Center Profile Zoning",
+		"Center ID Number",
+		"Comp Plan Area Name",
+		"Comp Plan Type Name",
+		"Comp Plan Type Code",
+		"Shape__Area",
+		"Shape__Length",
+	}
+	indices := make([]int, 0, len(targetCols))
+	newHeader := make([]string, 0, len(targetCols))
+	for _, target := range targetCols {
+		found := false
+		for i, h := range header {
+			if h == target {
+				indices = append(indices, i)
+				newHeader = append(newHeader, h)
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Fatalf("required column %s not found in CSV", target)
+		}
+	}
+
+	fReader := &filteredReader{
+		source:  reader,
+		indices: indices,
+	}
+
+	// 4. Create Table
+	if err := createTable(db, "parcel_geo", newHeader); err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
 
-	// 4. Insert Rows
-	count, err := insertParcels(db, "parcel_geo", header, reader)
+	// 5. Insert Rows
+	count, err := insertParcels(db, "parcel_geo", newHeader, fReader)
 	if err != nil {
 		log.Fatalf("failed to insert parcel geo: %v", err)
 	}
@@ -82,6 +179,7 @@ func getCSVReader(filePath string) (header []string, reader *csv.Reader, file *o
 	}
 
 	reader = csv.NewReader(csvFile)
+	reader.LazyQuotes = true
 
 	header, err = reader.Read()
 	if err != nil {
@@ -108,7 +206,7 @@ func createTable(db *sql.DB, tableName string, header []string) error {
 	return nil
 }
 
-func insertParcels(db *sql.DB, tableName string, header []string, reader *csv.Reader) (int, error) {
+func insertParcels(db *sql.DB, tableName string, header []string, reader RowReader) (int, error) {
 	var quotedCols []string
 	var placeholders []string
 
