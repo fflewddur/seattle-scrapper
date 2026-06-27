@@ -37,6 +37,7 @@ func main() {
 	loadParcels()
 	loadParcelGeo()
 	loadCondos()
+	loadResidentialBuildings()
 }
 
 func loadParcels() {
@@ -193,10 +194,10 @@ func loadCondos() {
 		"Major",
 		"Minor",
 		"UnitType",
-		"BuildingNumber",
+		"BldgNbr",
 		"UnitNbr",
 		"PcntOwnership",
-		"Address",
+		"BuildingNumber",
 		"Fraction",
 		"DirectionPrefix",
 		"StreetName",
@@ -239,6 +240,73 @@ func loadCondos() {
 	}
 
 	fmt.Printf("Successfully inserted %d records into data/parcels.db (condos)\n", count)
+}
+
+func loadResidentialBuildings() {
+	// 1. Open CSV and read header
+	header, reader, csvFile, err := getCSVReader("data/residential-buildings.csv")
+	if err != nil {
+		log.Fatalf("failed to get CSV reader: %v", err)
+	}
+	defer csvFile.Close()
+
+	// 2. Open SQLite
+	db, err := sql.Open("sqlite", "data/parcels.db")
+	if err != nil {
+		log.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	// 3. Filter columns
+	targetCols := []string{
+		"Major",
+		"Minor",
+		"BldgNbr",
+		"NbrLivingUnits",
+		"BuildingNumber",
+		"Fraction",
+		"DirectionPrefix",
+		"StreetName",
+		"StreetType",
+		"DirectionSuffix",
+		"ZipCode",
+		"YrBuilt",
+		"YrRenovated",
+	}
+	indices := make([]int, 0, len(targetCols))
+	newHeader := make([]string, 0, len(targetCols))
+	for _, target := range targetCols {
+		found := false
+		for i, h := range header {
+			if h == target {
+				indices = append(indices, i)
+				newHeader = append(newHeader, h)
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Fatalf("required column %s not found in CSV", target)
+		}
+	}
+
+	fReader := &filteredReader{
+		source:  reader,
+		indices: indices,
+	}
+
+	// 4. Create Table
+	if err := createTable(db, "residential_buildings", newHeader); err != nil {
+		log.Fatalf("failed to create table: %v", err)
+	}
+
+	// 5. Insert Rows
+	count, err := insertParcels(db, "residential_buildings", newHeader, fReader)
+	if err != nil {
+		log.Fatalf("failed to insert residential buildings: %v", err)
+	}
+
+	fmt.Printf("Successfully inserted %d records into data/parcels.db (residential_buildings)\n", count)
 }
 
 func getCSVReader(filePath string) (header []string, reader *csv.Reader, file *os.File, err error) {
@@ -336,7 +404,7 @@ func insertParcels(db *sql.DB, tableName string, header []string, reader RowRead
 
 		vals := make([]any, len(record))
 		for i, v := range record {
-			vals[i] = v
+			vals[i] = strings.TrimSpace(v)
 		}
 
 		_, err = stmt.Exec(vals...)
