@@ -38,33 +38,23 @@ func main() {
 	loadParcelGeo()
 	loadCondos()
 	loadResidentialBuildings()
+	loadApartments()
 }
 
 func loadParcels() {
-	// 1. Open CSV and read header
 	header, reader, csvFile, err := getCSVReader("data/parcels.csv")
 	if err != nil {
 		log.Fatalf("failed to get CSV reader: %v", err)
 	}
 	defer csvFile.Close()
 
-	// 2. Open SQLite
 	db, err := sql.Open("sqlite", "data/parcels.db")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
 	defer db.Close()
 
-	// 3. Filter columns
-	targetCols := []string{
-		"Major",
-		"Minor",
-		"PropName",
-		"PropType",
-		"PlatName",
-		"PlatLot",
-		"PlatBlock",
-	}
+	targetCols := []string{"Major", "Minor", "PropName", "PropType", "PlatName", "PlatLot", "PlatBlock"}
 	indices := make([]int, 0, len(targetCols))
 	newHeader := make([]string, 0, len(targetCols))
 	for _, target := range targetCols {
@@ -82,17 +72,12 @@ func loadParcels() {
 		}
 	}
 
-	fReader := &filteredReader{
-		source:  reader,
-		indices: indices,
-	}
+	fReader := &filteredReader{source: reader, indices: indices}
 
-	// 4. Create Table
 	if err := createTable(db, "parcels", newHeader); err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
 
-	// 5. Insert Rows
 	count, err := insertParcels(db, "parcels", newHeader, fReader)
 	if err != nil {
 		log.Fatalf("failed to insert parcels: %v", err)
@@ -102,41 +87,25 @@ func loadParcels() {
 }
 
 func loadParcelGeo() {
-	// 1. Open CSV and read header
 	header, reader, csvFile, err := getCSVReader("data/parcel_geo.csv")
 	if err != nil {
 		log.Fatalf("failed to get CSV reader: %v", err)
 	}
 	defer csvFile.Close()
 
-	// 2. Open SQLite
 	db, err := sql.Open("sqlite", "data/parcels.db")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
 	defer db.Close()
 
-	// 3. Filter columns
 	targetCols := []string{
-		"Major",
-		"Minor",
-		"Site Address (per KCA)",
-		"Property Name (per KCA)",
-		"Property Type (per KCA)",
-		"Land Use Code (per KCA)",
-		"Detailed Existing Land Use (per KCA)",
-		"Site Zip Code (per KCA)",
-		"Building Description (per KCA)",
-		"Ownership Type",
-		"Public Ownership Category",
-		"Parcel Area Exclude Stacked Parcel (Y)",
-		"Center Profile Zoning",
-		"Center ID Number",
-		"Comp Plan Area Name",
-		"Comp Plan Type Name",
-		"Comp Plan Type Code",
-		"Shape__Area",
-		"Shape__Length",
+		"Major", "Minor", "Site Address (per KCA)", "Property Name (per KCA)",
+		"Property Type (per KCA)", "Land Use Code (per KCA)", "Detailed Existing Land Use (per KCA)",
+		"Site Zip Code (per KCA)", "Building Description (per KCA)", "Ownership Type",
+		"Public Ownership Category", "Parcel Area Exclude Stacked Parcel (Y)",
+		"Center Profile Zoning", "Center ID Number", "Comp Plan Area Name",
+		"Comp Plan Type Name", "Comp Plan Type Code", "Shape__Area", "Shape__Length",
 	}
 	indices := make([]int, 0, len(targetCols))
 	newHeader := make([]string, 0, len(targetCols))
@@ -155,17 +124,12 @@ func loadParcelGeo() {
 		}
 	}
 
-	fReader := &filteredReader{
-		source:  reader,
-		indices: indices,
-	}
+	fReader := &filteredReader{source: reader, indices: indices}
 
-	// 4. Create Table
 	if err := createTable(db, "parcel_geo", newHeader); err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
 
-	// 5. Insert Rows
 	count, err := insertParcels(db, "parcel_geo", newHeader, fReader)
 	if err != nil {
 		log.Fatalf("failed to insert parcel geo: %v", err)
@@ -175,36 +139,22 @@ func loadParcelGeo() {
 }
 
 func loadCondos() {
-	// 1. Open CSV and read header
 	header, reader, csvFile, err := getCSVReader("data/condos.csv")
 	if err != nil {
 		log.Fatalf("failed to get CSV reader: %v", err)
 	}
 	defer csvFile.Close()
 
-	// 2. Open SQLite
 	db, err := sql.Open("sqlite", "data/parcels.db")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
 	defer db.Close()
 
-	// 3. Filter columns
 	targetCols := []string{
-		"Major",
-		"Minor",
-		"UnitType",
-		"BldgNbr",
-		"UnitNbr",
-		"PcntOwnership",
-		"BuildingNumber",
-		"Fraction",
-		"DirectionPrefix",
-		"StreetName",
-		"StreetType",
-		"DirectionSuffix",
-		"UnitDescr",
-		"ZipCode",
+		"Major", "Minor", "UnitType", "BldgNbr", "UnitNbr", "PcntOwnership",
+		"BuildingNumber", "Fraction", "DirectionPrefix", "StreetName",
+		"StreetType", "DirectionSuffix", "UnitDescr", "ZipCode",
 	}
 	indices := make([]int, 0, len(targetCols))
 	newHeader := make([]string, 0, len(targetCols))
@@ -223,17 +173,12 @@ func loadCondos() {
 		}
 	}
 
-	fReader := &filteredReader{
-		source:  reader,
-		indices: indices,
-	}
+	fReader := &filteredReader{source: reader, indices: indices}
 
-	// 4. Create Table
 	if err := createTable(db, "condos", newHeader); err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
 
-	// 5. Insert Rows
 	count, err := insertParcels(db, "condos", newHeader, fReader)
 	if err != nil {
 		log.Fatalf("failed to insert condos: %v", err)
@@ -243,35 +188,22 @@ func loadCondos() {
 }
 
 func loadResidentialBuildings() {
-	// 1. Open CSV and read header
 	header, reader, csvFile, err := getCSVReader("data/residential-buildings.csv")
 	if err != nil {
 		log.Fatalf("failed to get CSV reader: %v", err)
 	}
 	defer csvFile.Close()
 
-	// 2. Open SQLite
 	db, err := sql.Open("sqlite", "data/parcels.db")
 	if err != nil {
 		log.Fatalf("failed to open database: %v", err)
 	}
 	defer db.Close()
 
-	// 3. Filter columns
 	targetCols := []string{
-		"Major",
-		"Minor",
-		"BldgNbr",
-		"NbrLivingUnits",
-		"BuildingNumber",
-		"Fraction",
-		"DirectionPrefix",
-		"StreetName",
-		"StreetType",
-		"DirectionSuffix",
-		"ZipCode",
-		"YrBuilt",
-		"YrRenovated",
+		"Major", "Minor", "BldgNbr", "NbrLivingUnits", "BuildingNumber",
+		"Fraction", "DirectionPrefix", "StreetName", "StreetType",
+		"DirectionSuffix", "ZipCode", "YrBuilt", "YrRenovated",
 	}
 	indices := make([]int, 0, len(targetCols))
 	newHeader := make([]string, 0, len(targetCols))
@@ -290,23 +222,63 @@ func loadResidentialBuildings() {
 		}
 	}
 
-	fReader := &filteredReader{
-		source:  reader,
-		indices: indices,
-	}
+	fReader := &filteredReader{source: reader, indices: indices}
 
-	// 4. Create Table
 	if err := createTable(db, "residential_buildings", newHeader); err != nil {
 		log.Fatalf("failed to create table: %v", err)
 	}
 
-	// 5. Insert Rows
 	count, err := insertParcels(db, "residential_buildings", newHeader, fReader)
 	if err != nil {
 		log.Fatalf("failed to insert residential buildings: %v", err)
 	}
 
 	fmt.Printf("Successfully inserted %d records into data/parcels.db (residential_buildings)\n", count)
+}
+
+func loadApartments() {
+	header, reader, csvFile, err := getCSVReader("data/apartments.csv")
+	if err != nil {
+		log.Fatalf("failed to get CSV reader: %v", err)
+	}
+	defer csvFile.Close()
+
+	db, err := sql.Open("sqlite", "data/parcels.db")
+	if err != nil {
+		log.Fatalf("failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	targetCols := []string{"Major", "Minor", "ComplexDescr", "Address"}
+	indices := make([]int, 0, len(targetCols))
+	newHeader := make([]string, 0, len(targetCols))
+	for _, target := range targetCols {
+		found := false
+		for i, h := range header {
+			if h == target {
+				indices = append(indices, i)
+				newHeader = append(newHeader, h)
+				found = true
+				break
+			}
+		}
+		if !found {
+			log.Fatalf("required column %s not found in CSV", target)
+		}
+	}
+
+	fReader := &filteredReader{source: reader, indices: indices}
+
+	if err := createTable(db, "apartments", newHeader); err != nil {
+		log.Fatalf("failed to create table: %v", err)
+	}
+
+	count, err := insertParcels(db, "apartments", newHeader, fReader)
+	if err != nil {
+		log.Fatalf("failed to insert apartments: %v", err)
+	}
+
+	fmt.Printf("Successfully inserted %d records into data/parcels.db (apartments)\n", count)
 }
 
 func getCSVReader(filePath string) (header []string, reader *csv.Reader, file *os.File, err error) {
@@ -335,6 +307,11 @@ func createTable(db *sql.DB, tableName string, header []string) error {
 		columnDefs = append(columnDefs, fmt.Sprintf("\"%s\" TEXT", colName))
 	}
 
+	dropTableSQL := fmt.Sprintf("DROP TABLE IF EXISTS %s;", tableName)
+	if _, err := db.Exec(dropTableSQL); err != nil {
+		return fmt.Errorf("failed to drop table: %w", err)
+	}
+
 	createTableSQL := fmt.Sprintf("CREATE TABLE IF NOT EXISTS %s (%s);", tableName, strings.Join(columnDefs, ", "))
 	_, err := db.Exec(createTableSQL)
 	if err != nil {
@@ -360,7 +337,6 @@ func insertParcels(db *sql.DB, tableName string, header []string, reader RowRead
 	txCount := 0
 	const batchSize = 10000
 
-	// Helper to start a transaction and prepare the statement
 	startTx := func() (*sql.Tx, *sql.Stmt, error) {
 		tx, err := db.Begin()
 		if err != nil {
@@ -379,11 +355,10 @@ func insertParcels(db *sql.DB, tableName string, header []string, reader RowRead
 		return 0, err
 	}
 
-	// Ensure cleanup of the last transaction/statement
 	defer func() {
 		if tx != nil {
 			stmt.Close()
-			tx.Rollback() // Will be a no-op if committed
+			tx.Rollback()
 		}
 	}()
 
