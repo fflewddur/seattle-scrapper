@@ -6,7 +6,8 @@
       "Bash(touch main.go)",
       "Bash(mkdir -p parcel-reader && cd parcel-reader && go mod init parcel-reader)",
       "Bash(go run *)",
-      "mcp__gopls__go_diagnostics"
+      "mcp__gopls__go_diagnostics",
+      "mcp__gopls__go_workspace"
     ],
     "deny": [
       "Read(.devcontainer/**)"
