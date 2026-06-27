@@ -1,8 +1,16 @@
-FROM mcr.microsoft.com/devcontainers/go
+FROM mcr.microsoft.com/devcontainers/base:debian
+
+# Set environment variables
+ENV DEVCONTAINER=true
+ENV SHELL=/bin/zsh
+ENV EDITOR=nano
+ENV VISUAL=nano
+ENV DEBIAN_FRONTEND=noninteractive
+
 RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
     && apt-get -y install git sqlite3
 
-RUN go install golang.org/x/tools/gopls@latest
+# RUN go install golang.org/x/tools/gopls@latest
 
 ARG USERNAME=vscode
 
@@ -24,9 +32,3 @@ RUN chown -R $USERNAME /go
 
 # Remove .zprofile to ensure we use .zshrc instead
 RUN rm -f /home/$USERNAME/.zprofile
-
-# Set environment variables
-ENV DEVCONTAINER=true
-ENV SHELL=/bin/zsh
-ENV EDITOR=nano
-ENV VISUAL=nano

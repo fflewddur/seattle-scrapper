@@ -1,7 +1,12 @@
 {
-  // "image": "mcr.microsoft.com/devcontainers/go",
+  "name": "seattle-scrapper",
+  // "image": "mcr.microsoft.com/devcontainers/base:debian",
   "build": { "dockerfile": "Dockerfile" },
   "features": {
+    "ghcr.io/devcontainers/features/go:1": {
+      "version": "latest",
+      "gopls": "latest"
+    },
     "ghcr.io/devcontainers/features/node": {},
     "ghcr.io/anthropics/devcontainer-features/claude-code": {},
     "ghcr.io/devcontainers/features/common-utils": {
@@ -16,7 +21,8 @@
       "extensions": [
         "streetsidesoftware.code-spell-checker",
         "esbenp.prettier-vscode",
-        "continue.continue"
+        "continue.continue",
+        "golang.go"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
