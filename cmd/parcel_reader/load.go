@@ -33,81 +33,6 @@ func (f *filteredReader) Read() ([]string, error) {
 	return filtered, nil
 }
 
-func loadParcels(csvPath, tableName string, targetCols []string) {
-	if err := loadTable(csvPath, tableName, targetCols); err != nil {
-		log.Fatalf("failed to load %s: %v", tableName, err)
-	}
-}
-
-func loadParcelGeo(csvPath, tableName string, targetCols []string) {
-	if err := loadTable(csvPath, tableName, targetCols); err != nil {
-		log.Fatalf("failed to load %s: %v", tableName, err)
-	}
-}
-
-func loadCondos(csvPath, tableName string, targetCols []string) {
-	if err := loadTable(csvPath, tableName, targetCols); err != nil {
-		log.Fatalf("failed to load %s: %v", tableName, err)
-	}
-}
-
-func loadResidentialBuildings(csvPath, tableName string, targetCols []string) {
-	if err := loadTable(csvPath, tableName, targetCols); err != nil {
-		log.Fatalf("failed to load %s: %v", tableName, err)
-	}
-}
-
-func loadApartments(csvPath, tableName string, targetCols []string) {
-	if err := loadTable(csvPath, tableName, targetCols); err != nil {
-		log.Fatalf("failed to load %s: %v", tableName, err)
-	}
-}
-
-func loadTable(csvPath, tableName string, targetCols []string) error {
-	header, reader, csvFile, err := getCSVReader(csvPath)
-	if err != nil {
-		return fmt.Errorf("failed to get CSV reader: %w", err)
-	}
-	defer csvFile.Close()
-
-	db, err := sql.Open("sqlite", "data/parcels.db")
-	if err != nil {
-		return fmt.Errorf("failed to open database: %w", err)
-	}
-	defer db.Close()
-
-	indices := make([]int, 0, len(targetCols))
-	newHeader := make([]string, 0, len(targetCols))
-	for _, target := range targetCols {
-		found := false
-		for i, h := range header {
-			if h == target {
-				indices = append(indices, i)
-				newHeader = append(newHeader, h)
-				found = true
-				break
-			}
-		}
-		if !found {
-			return fmt.Errorf("required column %s not found in CSV", target)
-		}
-	}
-
-	fReader := &filteredReader{source: reader, indices: indices}
-
-	if err := createTable(db, tableName, newHeader); err != nil {
-		return fmt.Errorf("failed to create table: %w", err)
-	}
-
-	count, err := insertParcels(db, tableName, newHeader, fReader)
-	if err != nil {
-		return fmt.Errorf("failed to insert %s: %w", tableName, err)
-	}
-
-	fmt.Printf("Successfully inserted %d records into %s\n", count, tableName)
-	return nil
-}
-
 func getCSVReader(filePath string) (header []string, reader *csv.Reader, file *os.File, err error) {
 	csvFile, err := os.Open(filePath)
 	if err != nil {
@@ -240,4 +165,49 @@ func insertParcels(db *sql.DB, tableName string, header []string, reader RowRead
 	}
 
 	return count, nil
+}
+
+func loadTable(csvPath, tableName string, targetCols []string) error {
+	header, reader, csvFile, err := getCSVReader(csvPath)
+	if err != nil {
+		return fmt.Errorf("failed to get CSV reader: %w", err)
+	}
+	defer csvFile.Close()
+
+	db, err := sql.Open("sqlite", "data/parcels.db")
+	if err != nil {
+		return fmt.Errorf("failed to open database: %w", err)
+	}
+	defer db.Close()
+
+	indices := make([]int, 0, len(targetCols))
+	newHeader := make([]string, 0, len(targetCols))
+	for _, target := range targetCols {
+		found := false
+		for i, h := range header {
+			if h == target {
+				indices = append(indices, i)
+				newHeader = append(newHeader, h)
+				found = true
+				break
+			}
+		}
+		if !found {
+			return fmt.Errorf("required column %s not found in CSV", target)
+		}
+	}
+
+	fReader := &filteredReader{source: reader, indices: indices}
+
+	if err := createTable(db, tableName, newHeader); err != nil {
+		return fmt.Errorf("failed to create table: %w", err)
+	}
+
+	count, err := insertParcels(db, tableName, newHeader, fReader)
+	if err != nil {
+		return fmt.Errorf("failed to insert %s: %w", tableName, err)
+	}
+
+	fmt.Printf("Successfully inserted %d records into %s\n", count, tableName)
+	return nil
 }
