@@ -3,13 +3,20 @@
   "build": { "dockerfile": "Dockerfile" },
   "features": {
     "ghcr.io/devcontainers/features/node": {},
-    "ghcr.io/anthropics/devcontainer-features/claude-code": {}
+    "ghcr.io/anthropics/devcontainer-features/claude-code": {},
+    "ghcr.io/devcontainers/features/common-utils": {
+      "installZsh": true,
+      "installOhMyZsh": true,
+      "installOhMyZshConfig": true,
+      "configureZshAsDefaultShell": true
+    }
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "streetsidesoftware.code-spell-checker",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "continue.continue"
       ],
       "settings": {
         "terminal.integrated.defaultProfile.linux": "zsh",
@@ -30,6 +37,7 @@
   },
   "mounts": [
     "source=devc-${localWorkspaceFolderBasename}-config-${devcontainerId},target=/home/vscode/.claude,type=volume",
+    "source=devc-${localWorkspaceFolderBasename}-continue-${devcontainerId},target=/home/vscode/.continue,type=volume",
     "source=devc-${localWorkspaceFolderBasename}-bashhistory-${devcontainerId},target=/commandhistory,type=volume"
   ]
 }

@@ -19,7 +19,11 @@ RUN SNIPPET="autoload -Uz add-zsh-hook; append_history() { fc -W }; add-zsh-hook
     && echo "$SNIPPET" >> "/home/$USERNAME/.zshrc"
 
 RUN mkdir -p /home/$USERNAME/.claude && chown -R $USERNAME /home/$USERNAME/.claude
+RUN mkdir -p /home/$USERNAME/.continue && chown -R $USERNAME /home/$USERNAME/.continue
 RUN chown -R $USERNAME /go
+
+# Remove .zprofile to ensure we use .zshrc instead
+RUN rm -f /home/$USERNAME/.zprofile
 
 # Set environment variables
 ENV DEVCONTAINER=true
